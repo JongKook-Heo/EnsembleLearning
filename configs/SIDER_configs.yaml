@@ -1,0 +1,6 @@
+data_path: data/sider/sider.csv
+splitting: scaffold
+task: classification
+task_name: SIDER
+test_size: 0.1
+valid_size: 0.1

@@ -1,0 +1,6 @@
+data_path: data/qm8/qm8.csv
+splitting: scaffold
+task: regression
+task_name: qm8
+test_size: 0.1
+valid_size: 0.1

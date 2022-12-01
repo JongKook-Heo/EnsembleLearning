@@ -1,0 +1,6 @@
+data_path: data/qm9/qm9.csv
+splitting: random
+task: regression
+task_name: qm9
+test_size: 0.1
+valid_size: 0.1

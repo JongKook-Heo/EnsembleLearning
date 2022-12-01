@@ -1,0 +1,6 @@
+data_path: data/freesolv/freesolv.csv
+splitting: scaffold
+task: regression
+task_name: FreeSolv
+test_size: 0.1
+valid_size: 0.1

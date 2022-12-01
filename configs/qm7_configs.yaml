@@ -1,0 +1,6 @@
+data_path: data/qm7/qm7.csv
+splitting: scaffold
+task: regression
+task_name: qm7
+test_size: 0.1
+valid_size: 0.1

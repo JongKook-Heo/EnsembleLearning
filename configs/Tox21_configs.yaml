@@ -1,0 +1,6 @@
+data_path: data/tox21/tox21.csv
+splitting: scaffold
+task: classification
+task_name: Tox21
+test_size: 0.1
+valid_size: 0.1
