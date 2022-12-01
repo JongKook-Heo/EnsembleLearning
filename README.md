@@ -1,114 +1,49 @@
----
-jupyter:
-  kernelspec:
-    display_name: Python 3.7.13 (\'BA_chapter1\')
-    language: python
-    name: python3
-  language_info:
-    codemirror_mode:
-      name: ipython
-      version: 3
-    file_extension: .py
-    mimetype: text/x-python
-    name: python
-    nbconvert_exporter: python
-    pygments_lexer: ipython3
-    version: 3.7.13
-  nbformat: 4
-  nbformat_minor: 2
-  orig_nbformat: 4
-  vscode:
-    interpreter:
-      hash: 4cdf2d1f2f36b6678c1823f3d1ac6609f6ad83c85e18f34ee97b44f3e0b406a8
----
-
-::: {.cell .markdown}
 # Ensemble Learning Tutorial for Molecular Property Prediction
-
-#### 제작 : 허종국 (<hjkso1406@korea.ac.kr>) {#제작--허종국-hjkso1406koreaackr}
-
-본 튜토리얼에서는 부스팅 계열의 앙상블 모델(XGBoost, LightGBM,
-CatBoost)을 통해 다양한 물성을 예측해보도록 하겠습니다. 각 데이터셋의
-크기는 약 1000개에서 수만개까지 다양하며, 태스크는 분류와 회귀 모두
-존재합니다. 데이터의 특징에 따라 어떠한 모델이 더욱 적합한지,
-하이퍼파라미터에 따라 성능이 어떻게 변하는지 알아보도록 하겠습니다.
-
+#### 제작 : 허종국 (hjkso1406@korea.ac.kr)
+본 튜토리얼에서는 부스팅 계열의 앙상블 모델(XGBoost, LightGBM, CatBoost)을 통해 다양한 물성을 예측해보도록 하겠습니다. 각 데이터셋의 크기는 약 1000개에서 수만개까지 다양하며, 태스크는 분류와 회귀 모두 존재합니다. 데이터의 특징에 따라 어떠한 모델이 더욱 적합한지, 하이퍼파라미터에 따라 성능이 어떻게 변하는지 알아보도록 하겠습니다.
 ### Requiremnets
-
 #### rdkit
 
-**python 3.7이하** rdkit 패키지의 설치 명령어는 Python version에 따라
-다릅니다.
-
-    pip install rdkit 
-
-**python 3.8**
-
-    conda install -c conda-forge rdkit
+__python 3.7이하__
+rdkit 패키지의 설치 명령어는 Python version에 따라 다릅니다.
+```
+pip install rdkit 
+```
+__python 3.8__
+```
+conda install -c conda-forge rdkit
+```
 
 #### lightgbm
+Windows 운영체제에서 GPU기반 LightGBM을 사용하고 싶은 경우, 아래 [링크](https://datanetworkanalysis.github.io/2019/11/13/lightgbm_gpu)의 빌드 과정을 따라해주세요!
+* 설치 과정의 링크은 고려대학교 산업경영공학과 DSBA 연구실의 허재혁 연구원의 게시글임을 밝힙니다.
 
-Windows 운영체제에서 GPU기반 LightGBM을 사용하고 싶은 경우, 아래
-[링크](https://datanetworkanalysis.github.io/2019/11/13/lightgbm_gpu)의
-빌드 과정을 따라해주세요!
-
--   설치 과정의 링크은 고려대학교 산업경영공학과 DSBA 연구실의 허재혁
-    연구원의 게시글임을 밝힙니다.
 
 ### Moleculenet Benchmark
+뇌혈관장벽 투과성, 용해도, 전기음성도 등 화학 분자의 물성을 예측하는 것은 화학 정보학 분야에서 가장 중요한 태스크 중 하나입니다. [MoleculeNet Benchmark](https://pubs.rsc.org/en/content/articlehtml/2018/sc/c7sc02664a)는 뇌혈관장벽 투과성, 용해도, 전기음성도 등 양자역학, 물리화학, 생물물리학, 생리학에 아우르는 다양한 물성에 대한 데이터셋을 제공합니다.
+![Moleculenet](./images/moleculenet.png)
+출처 : Wu, Z., Ramsundar, B., Feinberg, E. N., Gomes, J., Geniesse, C., Pappu, A. S., ... & Pande, V. (2018). MoleculeNet: a benchmark for molecular machine learning. Chemical science, 9(2), 513-530.
 
-뇌혈관장벽 투과성, 용해도, 전기음성도 등 화학 분자의 물성을 예측하는
-것은 화학 정보학 분야에서 가장 중요한 태스크 중 하나입니다. [MoleculeNet
-Benchmark](https://pubs.rsc.org/en/content/articlehtml/2018/sc/c7sc02664a)는
-뇌혈관장벽 투과성, 용해도, 전기음성도 등 양자역학, 물리화학, 생물물리학,
-생리학에 아우르는 다양한 물성에 대한 데이터셋을 제공합니다.
-[Moleculenet]{.image} 출처 : Wu, Z., Ramsundar, B., Feinberg, E. N.,
-Gomes, J., Geniesse, C., Pappu, A. S., \... & Pande, V. (2018).
-MoleculeNet: a benchmark for molecular machine learning. Chemical
-science, 9(2), 513-530.
 
 ### Download Data
+본 튜토리얼에서 사용하는 데이터는 MoleculeNet Benchmark의 5가지 데이터인 __BBBP, BACE, HIV, ESOL, Lipo__ 입니다. [링크](https://drive.google.com/file/d/1aDtN6Qqddwwn2x612kWz9g0xQcuAtzDE/view)를 통해 데이터를 다운받으시길 바랍니다. 혹은 `./data` 라는 폴더를 생성한 후 직접 [MoleculeNet](https://moleculenet.org/)에서 다운 받으실 수 있습니다.
 
-본 튜토리얼에서 사용하는 데이터는 MoleculeNet Benchmark의 5가지 데이터인
-**BBBP, BACE, HIV, ESOL, Lipo** 입니다.
-[링크](https://drive.google.com/file/d/1aDtN6Qqddwwn2x612kWz9g0xQcuAtzDE/view)를
-통해 데이터를 다운받으시길 바랍니다. 혹은 `./data` 라는 폴더를 생성한 후
-직접 [MoleculeNet](https://moleculenet.org/)에서 다운 받으실 수
-있습니다.
 
--   이외에도 **qm7, ClinTox** 등 다양한 태스크의 물성 예측 데이터를
-    제공하고 있습니다. 각 데이터셋의 크기, 평가지표, 태스크(분류/회귀),
-    스플릿 방식은 아래와 같으니 참고해주세요! 출처 : Wang, Y., Wang, J.,
-    Cao, Z., & Farimani, A. B. (2021). Molclr: Molecular contrastive
-    learning of representations via graph neural networks. arXiv
-    preprint arXiv:2102.10056. [Description]{.image}
+* 이외에도 __qm7, ClinTox__ 등 다양한 태스크의 물성 예측 데이터를 제공하고 있습니다. 각 데이터셋의 크기, 평가지표, 태스크(분류/회귀), 스플릿 방식은 아래와 같으니 참고해주세요!
+출처 : Wang, Y., Wang, J., Cao, Z., & Farimani, A. B. (2021). Molclr: Molecular contrastive learning of representations via graph neural networks. arXiv preprint arXiv:2102.10056.
+![Description](./images/description.PNG)
 
 ### Load Data
-
 #### Molecular Fingerprint란??
-
-분자를 고정된 크기의 해쉬코드로 전환한 것을 Molecular Fingerprint라고
-합니다. 본 튜토리얼에서는 rdkit에서 제공하는 **Morgan Fingerprint** 를
-통해 분자를 정형 데이터로 표현하도록 하겠습니다. Morgan Fingerprint에
-대해 더 관심있고 자세한 설명을 듣고싶은 분들은 **서울대학교 제약학과
-이주용 교수님** 의 [유튜브
-강의](https://www.youtube.com/watch?v=T2aHx4wVea8&t=592s)를
-참고해주세요!
+분자를 고정된 크기의 해쉬코드로 전환한 것을 Molecular Fingerprint라고 합니다. 본 튜토리얼에서는 rdkit에서 제공하는 __Morgan Fingerprint__ 를 통해 분자를 정형 데이터로 표현하도록 하겠습니다. Morgan Fingerprint에 대해 더 관심있고 자세한 설명을 듣고싶은 분들은
+__서울대학교 제약학과 이주용 교수님__ 의 [유튜브 강의](https://www.youtube.com/watch?v=T2aHx4wVea8&t=592s)를 참고해주세요!
 
 #### Scaffold Split이란??
+스캐폴드(Scaffold)란 분자를 이루고 있는 기본적인 골격 뼈대를 의미합니다. 각 분자별로 가지고 있는 Scaffold는 같을 수도 있고 다를 수도 있습니다. 스캐폴드의 예시는 아래 그림과 같습니다.
+![Scaffold](./images/scaffold.png)
 
-스캐폴드(Scaffold)란 분자를 이루고 있는 기본적인 골격 뼈대를 의미합니다.
-각 분자별로 가지고 있는 Scaffold는 같을 수도 있고 다를 수도 있습니다.
-스캐폴드의 예시는 아래 그림과 같습니다. [Scaffold]{.image}
+물성 예측의 궁극적인 목적은 __한번도 본 적 없는 분자에 대해서 강건하고 정확한 타겟 물성을 예측하는 것__ 입니다. 따라서 물성 예측에서는 학습, 검증, 테스트 데이터에 대해 서로 다른 스캐폴드(Scaffold)를 가지는 것을 원칙으로 합니다. __utils.py__ 의 함수를 통해 데이터셋을 불러오고, 스캐폴드 별로 분자의 데이터셋을 분리하였습니다.
 
-물성 예측의 궁극적인 목적은 **한번도 본 적 없는 분자에 대해서 강건하고
-정확한 타겟 물성을 예측하는 것** 입니다. 따라서 물성 예측에서는 학습,
-검증, 테스트 데이터에 대해 서로 다른 스캐폴드(Scaffold)를 가지는 것을
-원칙으로 합니다. **utils.py** 의 함수를 통해 데이터셋을 불러오고,
-스캐폴드 별로 분자의 데이터셋을 분리하였습니다.
-:::
-
-::: {.cell .code execution_count="86"}
 ``` {.python}
 import os
 import numpy as np
